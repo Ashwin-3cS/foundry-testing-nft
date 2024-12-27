@@ -2,39 +2,26 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract CombinedToken is ERC20, ERC721, Ownable {
-    uint256 private _nextTokenId;
+contract QodoToken is ERC20, Ownable {
+    uint256 public constant INITIAL_SUPPLY = 1000000 * 10 ** 18; // 1 million tokens
+    uint256 public burnLimit = 100000 * 10 ** 18; // 100,000 tokens
 
-    // ERC-20 Constructor
-    constructor() ERC20("MyToken", "MTK") ERC721("MyNFT", "MNFT") {}
+    constructor() ERC20("QodoToken", "QDT") Ownable(msg.sender) {
+        _mint(msg.sender, INITIAL_SUPPLY);
+    }
 
-    // ERC-20 Mint
-    function mintERC20(address to, uint256 amount) external onlyOwner {
+    function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
     }
 
-    // ERC-721 Mint
-    function mintNFT(address to) external onlyOwner {
-        _safeMint(to, _nextTokenId);
-        _nextTokenId++;
+    function burn(uint256 amount) public {
+        require(amount <= burnLimit, "Cannot burn more than burn limit");
+        _burn(msg.sender, amount);
     }
 
-    // ERC-20 Burn
-    function burnERC20(address from, uint256 amount) external {
-        _burn(from, amount);
-    }
-
-    // ERC-721 Burn
-    function burnNFT(uint256 tokenId) external {
-        require(ownerOf(tokenId) == msg.sender, "Not the owner");
-        _burn(tokenId);
-    }
-
-    // Transfer NFT (overrides from ERC721)
-    function transferNFT(address from, address to, uint256 tokenId) external {
-        safeTransferFrom(from, to, tokenId);
+    function setBurnLimit(uint256 newLimit) public onlyOwner {
+        burnLimit = newLimit;
     }
 }
