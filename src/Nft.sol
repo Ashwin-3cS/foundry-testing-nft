@@ -3,11 +3,9 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract QodoNFT is ERC721, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    uint256 private _currentTokenId;
 
     uint256 public constant MINT_PRICE = 0.01 ether;
     uint256 public constant MAX_SUPPLY = 1000;
@@ -16,13 +14,12 @@ contract QodoNFT is ERC721, Ownable {
 
     function mint() public payable returns (uint256) {
         require(msg.value >= MINT_PRICE, "Insufficient payment");
-        require(_tokenIds.current() < MAX_SUPPLY, "Max supply reached");
+        require(_currentTokenId < MAX_SUPPLY, "Max supply reached");
 
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
-        _safeMint(msg.sender, newTokenId);
+        _currentTokenId += 1;
+        _safeMint(msg.sender, _currentTokenId);
 
-        return newTokenId;
+        return _currentTokenId;
     }
 
     function burn(uint256 tokenId) public {
